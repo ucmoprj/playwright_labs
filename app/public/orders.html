@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Orders - Mini Shop</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>Your orders</h1>
+    <div id="error" class="message error" role="alert"></div>
+    <div id="status" class="message success" role="status"></div>
+
+    <p id="no-orders" hidden>You have no orders yet.</p>
+    <table id="orders-table" hidden>
+      <thead>
+        <tr><th>Order</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="orders"></tbody>
+    </table>
+  </main>
+
+  <script>
+    function render(orders) {
+      document.getElementById('no-orders').hidden = orders.length > 0;
+      document.getElementById('orders-table').hidden = orders.length === 0;
+      document.getElementById('orders').innerHTML = orders.map((o) => `
+        <tr data-order-id="${o.id}">
+          <td>Order #${o.id}</td>
+          <td>${o.items.map((i) => `${i.name} x ${i.quantity}`).join(', ')}</td>
+          <td>${formatMoney(o.total)}</td>
+          <td data-testid="order-status">${o.status}</td>
+          <td>
+            ${o.status === 'CREATED' ? '<button type="button" class="pay">Pay</button>' : ''}
+            ${o.status !== 'CANCELLED' ? '<button type="button" class="cancel">Cancel</button>' : ''}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadOrders() {
+      const { orders } = await api('GET', '/api/orders');
+      render(orders);
+    }
+
+    document.getElementById('orders').addEventListener('click', async (event) => {
+      const row = event.target.closest('tr');
+      if (!row) return;
+      const id = row.dataset.orderId;
+      try {
+        if (event.target.classList.contains('pay')) {
+          await api('POST', `/api/orders/${id}/pay`);
+          showSuccess(`Order #${id} was paid.`);
+        } else if (event.target.classList.contains('cancel')) {
+          await api('POST', `/api/orders/${id}/cancel`);
+          showSuccess(`Order #${id} was cancelled.`);
+        }
+        await loadOrders();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    if (requireLogin()) {
+      const created = new URLSearchParams(window.location.search).get('created');
+      if (created) showSuccess(`Order #${created} was placed.`);
+      loadOrders().catch((err) => showError(err.message));
+    }
+  </script>
+</body>
+</html>

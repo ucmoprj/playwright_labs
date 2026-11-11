@@ -1,0 +1,16 @@
+{
+  // Editor-only settings: Playwright runs .ts files by itself and ignores most
+  // of this file. It exists so VS Code knows about Node globals (process,
+  // Buffer) and modern JavaScript, and stops showing red squiggles.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["playwright.config.ts", "tests/**/*.ts"]
+}

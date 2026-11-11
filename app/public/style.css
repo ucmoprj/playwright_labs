@@ -1,0 +1,104 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  color: #222;
+  background: #fafafa;
+}
+
+#nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 24px;
+  background: #1f3a5f;
+  color: #fff;
+}
+
+#nav a {
+  color: #fff;
+  text-decoration: none;
+}
+
+#nav .spacer {
+  flex: 1;
+}
+
+main {
+  max-width: 860px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+
+.message:empty {
+  display: none;
+}
+
+.message {
+  padding: 10px 14px;
+  margin: 12px 0;
+  border-radius: 4px;
+}
+
+.message.error {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+.message.success {
+  background: #e6f4ea;
+  color: #1e5e2e;
+}
+
+.product-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.product-list li {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+input[type="number"] {
+  width: 64px;
+}
+
+form.stacked label {
+  display: block;
+  margin: 12px 0 4px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.summary {
+  margin-top: 16px;
+  text-align: right;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

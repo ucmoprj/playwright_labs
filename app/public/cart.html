@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart - Mini Shop</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>Your cart</h1>
+    <div id="error" class="message error" role="alert"></div>
+    <div id="status" class="message success" role="status"></div>
+
+    <p id="empty-cart" hidden>Your cart is empty.</p>
+    <table id="cart-table" hidden>
+      <thead>
+        <tr><th>Product</th><th>Price</th><th>Quantity</th><th>Line total</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="cart-items"></tbody>
+    </table>
+
+    <div id="summary" class="summary" hidden>
+      <p>Subtotal: <span data-testid="subtotal"></span></p>
+      <p>Discount: <span data-testid="discount"></span></p>
+      <p><strong>Total: <span data-testid="total"></span></strong></p>
+      <button type="button" id="place-order">Place order</button>
+    </div>
+  </main>
+
+  <script>
+    function render(cart) {
+      const empty = cart.items.length === 0;
+      document.getElementById('empty-cart').hidden = !empty;
+      document.getElementById('cart-table').hidden = empty;
+      document.getElementById('summary').hidden = empty;
+
+      document.getElementById('cart-items').innerHTML = cart.items.map((item) => `
+        <tr data-product-id="${item.productId}">
+          <td>${item.name}</td>
+          <td>${formatMoney(item.price)}</td>
+          <td>
+            <label for="qty-${item.productId}" class="visually-hidden">Quantity</label>
+            <input id="qty-${item.productId}" type="number" value="${item.quantity}">
+            <button type="button" class="update">Update</button>
+          </td>
+          <td>${formatMoney(item.lineTotal)}</td>
+          <td><button type="button" class="remove">Remove</button></td>
+        </tr>
+      `).join('');
+
+      document.querySelector('[data-testid="subtotal"]').textContent = formatMoney(cart.subtotal);
+      document.querySelector('[data-testid="discount"]').textContent =
+        `-${formatMoney(cart.discount)} (${Math.round(cart.discountRate * 100)}%)`;
+      document.querySelector('[data-testid="total"]').textContent = formatMoney(cart.total);
+    }
+
+    async function loadCart() {
+      render(await api('GET', '/api/cart'));
+    }
+
+    document.getElementById('cart-items').addEventListener('click', async (event) => {
+      const row = event.target.closest('tr');
+      if (!row) return;
+      const productId = row.dataset.productId;
+      try {
+        if (event.target.classList.contains('update')) {
+          const raw = row.querySelector('input').value;
+          const quantity = raw === '' ? NaN : Number(raw);
+          render(await api('PATCH', `/api/cart/items/${productId}`, { quantity }));
+          showSuccess('Cart updated.');
+        } else if (event.target.classList.contains('remove')) {
+          render(await api('DELETE', `/api/cart/items/${productId}`));
+          showSuccess('Item removed.');
+        }
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    document.getElementById('place-order').addEventListener('click', async () => {
+      try {
+        const { order } = await api('POST', '/api/orders');
+        window.location.href = `/orders.html?created=${order.id}`;
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    if (requireLogin()) loadCart().catch((err) => showError(err.message));
+  </script>
+</body>
+</html>

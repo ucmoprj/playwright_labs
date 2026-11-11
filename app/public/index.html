@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Products - Mini Shop</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>Products</h1>
+    <div id="error" class="message error" role="alert"></div>
+    <div id="status" class="message success" role="status"></div>
+
+    <form id="search-form" role="search">
+      <label for="search">Search products</label>
+      <input id="search" name="q" type="search">
+      <button type="submit">Search</button>
+    </form>
+
+    <p id="result-count"></p>
+    <ul id="product-list" class="product-list" aria-label="Product list"></ul>
+  </main>
+
+  <script>
+    async function loadProducts(query) {
+      const url = query ? `/api/products?q=${encodeURIComponent(query)}` : '/api/products';
+      const { products } = await api('GET', url);
+      const list = document.getElementById('product-list');
+      document.getElementById('result-count').textContent =
+        products.length === 0 ? 'No products found.' : `${products.length} product(s) found.`;
+
+      list.innerHTML = products.map((p) => `
+        <li aria-label="${p.name}">
+          <h2>${p.name}</h2>
+          <p class="price">${formatMoney(p.price)}</p>
+          <p class="stock">${p.stock > 0 ? `In stock: ${p.stock}` : 'Out of stock'}</p>
+          <button type="button" data-id="${p.id}" ${p.stock > 0 ? '' : 'disabled'}>Add to cart</button>
+        </li>
+      `).join('');
+    }
+
+    document.getElementById('search-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      loadProducts(document.getElementById('search').value).catch((err) => showError(err.message));
+    });
+
+    document.getElementById('product-list').addEventListener('click', async (event) => {
+      const button = event.target.closest('button[data-id]');
+      if (!button || !requireLogin()) return;
+      try {
+        await api('POST', '/api/cart/items', { productId: Number(button.dataset.id), quantity: 1 });
+        const name = button.closest('li').getAttribute('aria-label');
+        showSuccess(`${name} was added to your cart.`);
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    loadProducts().catch((err) => showError(err.message));
+  </script>
+</body>
+</html>

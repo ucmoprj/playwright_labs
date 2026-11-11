@@ -1,0 +1,6 @@
+{
+  // VS Code suggests installing these extensions when this folder is opened.
+  // Playwright Test for VSCode: run/debug each test from the editor gutter,
+  // the Testing sidebar, "Pick locator", "Record new", and the trace viewer.
+  "recommendations": ["ms-playwright.playwright"]
+}

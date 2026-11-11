@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log in - Mini Shop</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>Log in</h1>
+    <div id="error" class="message error" role="alert"></div>
+    <div id="status" class="message success" role="status"></div>
+
+    <form id="login-form" class="stacked">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username">
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password">
+
+      <p><button type="submit">Log in</button></p>
+    </form>
+  </main>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      try {
+        const data = await api('POST', '/api/auth/login', { username, password });
+        saveSession(data.token, data.user);
+        window.location.href = '/index.html';
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+  </script>
+</body>
+</html>
